@@ -2,7 +2,7 @@ local share_gold_enabled = true
 
 Helper = require("./helper")
 
-log.info("Successfully loaded ".._ENV["!guid"]..". Enjoy =)")
+log.info("Successfully loaded ".._ENV["!guid"]..".")
 
 local damage_per_5ticks = {}
 for i = 1, 24 do damage_per_5ticks[i] = 0 end
