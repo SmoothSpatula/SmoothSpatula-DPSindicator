@@ -44,7 +44,7 @@ gm.pre_script_hook(gm.constants.__input_system_tick, function()
 end)
 
 -- Hijacks the draw event to write our dps text
-local skill_x, skill_y = 0, 0
+--local skill_x, skill_y = 0, 0
 gm.post_code_execute(function(self, other, code, result, flags)
     if not ingame or player == nil then
         return
