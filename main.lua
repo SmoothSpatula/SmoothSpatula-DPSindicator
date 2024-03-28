@@ -1,72 +1,90 @@
-Helper = require("./helper")
+local dps_enabled = true
 
 log.info("Successfully loaded ".._ENV["!guid"]..".")
 
-local damage_per_5ticks = {}
-for i = 1, 24 do damage_per_5ticks[i] = 0 end
+gui.add_to_menu_bar(function()
+    local new_value, clicked = ImGui.Checkbox("Show DPS", dps_enabled)
+    if clicked then
+        dps_enabled = new_value
+    end
+end)
 
-local damage_index = 1
-local player = nil
-local total_damage = 0
+function get_value( t, key )
+    for k,v in pairs(t) do 
+        if k==key then return v end
+    end
+    return nil
+end
+  
+function add_inst(tab, id, size)
+    tab[id] = {}
+    for i = 1, size do tab[id][i] = 0 end
+    tab[id]['total'] = 0
+end
+
+local damage_index = 2
 local ingame = false
-
-
-
+local damage_tab = {}
+local nb_tp = 12 --number of tick periods
+local tpl = 5 --tick period length
+local ratio = 60 / (nb_tp * tpl)
 
 -- Adds damage together from last 5 ticks
 gm.post_script_hook(gm.constants.damager_calculate_damage, function(self, other, result, args)
-    ingame = true
-    if not Helper.does_instance_exist(player) then
-        player = Helper.get_client_player()
-    end
-    if args[6].type ~= 15 then return end 
-    local actor = args[6].value
-    if player.id == actor.id then
-        damage_per_5ticks[damage_index] = damage_per_5ticks[damage_index] + args[4].value
-    end
-
-end)
-
-
--- Every 5 ticks removes the damage done 60 ticks ago and adds damage done in last 5 ticks
-local tick_counter = 0
-gm.pre_script_hook(gm.constants.__input_system_tick, function()
-    tick_counter = tick_counter + 1
-    if tick_counter == 5 then
-        total_damage = total_damage + damage_per_5ticks[damage_index]
-        damage_index = damage_index + 1
-        if damage_index==25 then damage_index =1 end
-            total_damage = total_damage - damage_per_5ticks[damage_index]
-            damage_per_5ticks[damage_index], tick_counter = 0, 0
-    end
-end)
-
--- Hijacks the draw event to write our dps text
---local skill_x, skill_y = 0, 0
-gm.post_code_execute(function(self, other, code, result, flags)
-    if not ingame or player == nil then
-        return
-    end
-    
-    if code.name:match("oInit_Draw") then
+    if not dps_enabled then return end
+    if not ingame then
+        damage_tab = {} 
+        ingame = true
         for i = 1, #gm.CInstance.instances_active do
             local inst = gm.CInstance.instances_active[i]
-            if inst.id == player.id then
-                gm.draw_text_ext_w(inst.x, inst.y+25, "DPS : " .. math.floor(total_damage/2), 101, 100)
+            if inst.object_index == gm.constants.oP then
+                add_inst(damage_tab, inst.id, nb_tp)
+            end
+        end  
+    end
+
+    local damage_actor = get_value(damage_tab, args[6].value.id)
+    if damage_actor == nil then return end
+    local actor = args[6].value
+    local damage_actor = get_value(damage_tab, actor.id)
+    damage_actor[damage_index] = damage_actor[damage_index] + args[4].value
+    
+end)
+
+
+local tick_counter = 0
+gm.pre_script_hook(gm.constants.__input_system_tick, function(self, other, result, args)
+    if not dps_enabled then return end
+    tick_counter = tick_counter + 1
+    if tick_counter == tpl then
+        for id, damage_actor in pairs(damage_tab) do 
+            damage_actor['total'] = damage_actor['total'] + damage_actor[damage_index]
+        end
+        damage_index = damage_index + 1
+        if damage_index==nb_tp + 1 then damage_index = 1 end
+        for id, damage_actor  in pairs(damage_tab) do 
+            damage_actor['total'] = damage_actor['total'] - damage_actor[damage_index]
+            damage_actor[damage_index] = 0
+        end
+        tick_counter = 0
+    end
+end)
+
+gm.post_code_execute(function(self, other, code, result, flags)
+    if code.name:match("oInit_Draw_7") then
+        if not ingame or not dps_enabled then return end
+        for i = 1, #gm.CInstance.instances_active do
+            local inst = gm.CInstance.instances_active[i]
+            if inst.object_index == gm.constants.oP then
+                local damage_actor = get_value(damage_tab, inst.id)
+                if damage_actor == nil then return end
+                local damage_to_display = damage_actor['total']*ratio  
+                gm.draw_text(inst.x, inst.y+25, "DPS : " .. math.floor(damage_to_display))
             end
         end
     end
 end)
 
-
-
-gm.post_script_hook(gm.constants.run_create, function(self, other, result, args)
-    ingame = true
-    player = Helper.get_client_player()
-end)
-
 gm.pre_script_hook(gm.constants.run_destroy, function(self, other, result, args)
     ingame = false
 end)
-
-
