@@ -6,8 +6,8 @@ local dps_enabled = true
 -- Parameters (in frames)
 
 local nb_tp = 12 --number of tick periods
-local tpl = 5 --tick period length
-local ratio = 60 / (nb_tp * tpl)
+local tick_length = 5 --tick period length
+local ratio = 60 / (nb_tp * tick_length)
 
 -- ========== ImGui ==========
 
@@ -67,7 +67,7 @@ local tick_counter = 0
 gm.pre_script_hook(gm.constants.__input_system_tick, function(self, other, result, args)
     if not dps_enabled then return end
     tick_counter = tick_counter + 1
-    if tick_counter == tpl then
+    if tick_counter == tick_length then
         for id, damage_actor in pairs(damage_tab) do 
             damage_actor['total'] = damage_actor['total'] + damage_actor[damage_index]
         end
