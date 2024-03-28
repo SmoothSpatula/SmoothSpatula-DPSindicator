@@ -1,5 +1,3 @@
-local share_gold_enabled = true
-
 Helper = require("./helper")
 
 log.info("Successfully loaded ".._ENV["!guid"]..".")
