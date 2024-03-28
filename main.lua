@@ -1,4 +1,15 @@
+-- DPS Indicator v1.0.0
+-- SmoothSpatula
+
 local dps_enabled = true
+
+-- Parameters (in frames)
+
+local nb_tp = 12 --number of tick periods
+local tpl = 5 --tick period length
+local ratio = 60 / (nb_tp * tpl)
+
+-- ========== ImGui ==========
 
 gui.add_to_menu_bar(function()
     local new_value, clicked = ImGui.Checkbox("Show DPS", dps_enabled)
@@ -7,6 +18,7 @@ gui.add_to_menu_bar(function()
     end
 end)
 
+-- ========== Utils ==========
 
 function get_value( t, key )
     for k,v in pairs(t) do 
@@ -21,16 +33,17 @@ function add_inst(tab, id, size)
     tab[id]['total'] = 0
 end
 
+-- ========== Main ==========
+
 local damage_index = 1
 local ingame = false
 local damage_tab = {}
-local nb_tp = 12 --number of tick periods
-local tpl = 5 --tick period length
-local ratio = 60 / (nb_tp * tpl)
 
 -- Adds damage together from last 5 ticks
 gm.post_script_hook(gm.constants.damager_calculate_damage, function(self, other, result, args)
     if not dps_enabled then return end
+    -- Get the player ids on first damage dealt
+    -- (Tried to use run_create but player instances don't exist yet)
     if not ingame then
         damage_tab = {}
         ingame = true
@@ -49,6 +62,7 @@ gm.post_script_hook(gm.constants.damager_calculate_damage, function(self, other,
     
 end)
 
+-- Cycle through the damage in a queue
 local tick_counter = 0
 gm.pre_script_hook(gm.constants.__input_system_tick, function(self, other, result, args)
     if not dps_enabled then return end
@@ -67,6 +81,7 @@ gm.pre_script_hook(gm.constants.__input_system_tick, function(self, other, resul
     end
 end)
 
+-- Hijack the Draw event
 gm.post_code_execute(function(self, other, code, result, flags)
     if code.name:match("oInit_Draw_7") then
         if not ingame or not dps_enabled then return end
@@ -82,6 +97,7 @@ gm.post_code_execute(function(self, other, code, result, flags)
     end
 end)
 
+-- Disable mod when run ends
 gm.pre_script_hook(gm.constants.run_destroy, function(self, other, result, args)
     ingame = false
 end)
