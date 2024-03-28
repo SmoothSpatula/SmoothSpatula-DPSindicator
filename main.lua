@@ -1,7 +1,5 @@
 local dps_enabled = true
 
-log.info("Successfully loaded ".._ENV["!guid"]..".")
-
 gui.add_to_menu_bar(function()
     local new_value, clicked = ImGui.Checkbox("Show DPS", dps_enabled)
     if clicked then
