@@ -6,7 +6,7 @@ local dps_enabled = true
 -- Parameters (in frames/ticks)
 
 local nb_tp = 12 --number of tick periods before the damage is removed from the counter
-local tick_length = 5 --tick period length
+local tick_length = 5 --time between 2 damage updates 
 local ratio = 60 / (nb_tp * tick_length)
 
 -- ========== ImGui ==========
