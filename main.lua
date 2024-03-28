@@ -22,7 +22,7 @@ function add_inst(tab, id, size)
     tab[id]['total'] = 0
 end
 
-local damage_index = 2
+local damage_index = 1
 local ingame = false
 local damage_tab = {}
 local nb_tp = 12 --number of tick periods
