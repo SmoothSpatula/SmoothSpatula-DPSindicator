@@ -9,6 +9,7 @@ gui.add_to_menu_bar(function()
     end
 end)
 
+
 function get_value( t, key )
     for k,v in pairs(t) do 
         if k==key then return v end
@@ -33,7 +34,7 @@ local ratio = 60 / (nb_tp * tpl)
 gm.post_script_hook(gm.constants.damager_calculate_damage, function(self, other, result, args)
     if not dps_enabled then return end
     if not ingame then
-        damage_tab = {} 
+        damage_tab = {}
         ingame = true
         for i = 1, #gm.CInstance.instances_active do
             local inst = gm.CInstance.instances_active[i]
@@ -42,15 +43,13 @@ gm.post_script_hook(gm.constants.damager_calculate_damage, function(self, other,
             end
         end  
     end
-
-    local damage_actor = get_value(damage_tab, args[6].value.id)
-    if damage_actor == nil then return end
+    if args[6].type == 0 then return end --check if damage is done by an instance
     local actor = args[6].value
     local damage_actor = get_value(damage_tab, actor.id)
+    if damage_actor == nil then return end --check if instance is a player
     damage_actor[damage_index] = damage_actor[damage_index] + args[4].value
     
 end)
-
 
 local tick_counter = 0
 gm.pre_script_hook(gm.constants.__input_system_tick, function(self, other, result, args)
