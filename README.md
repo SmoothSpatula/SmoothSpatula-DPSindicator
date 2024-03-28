@@ -1,4 +1,4 @@
 # DPSindicator
 DPS Indicator for Risk of Rain Returns
 
-Displays both your and other player's current DPS.
+Displays the current DPS for you and other players in your party.
