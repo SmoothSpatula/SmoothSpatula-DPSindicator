@@ -1,6 +1,6 @@
 ﻿{
 	"name": "DPSindicator",
-	"version_number": "1.0.0",
+	"version_number": "1.0.1",
 	"website_url": "https://github.com/SmoothSpatula/SmoothSpatula-DPSindicator",
 	"description": "DPS indicator for Risk of Rain Returns",
 	"dependencies": [
