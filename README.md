@@ -12,7 +12,7 @@ This mod depends on the [Return Of Modding](https://github.com/return-of-modding
 3. The mod should now be loaded. Enjoy your DPS!
 
 ## Special Thanks To
-* iDeathHD for the help pn the draw text function
+* iDeathHD for the help on the draw text function
 * The Return Of Modding team
 
 ## Contact
