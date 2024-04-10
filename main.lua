@@ -1,7 +1,12 @@
--- DPS Indicator v1.0.0
+-- DPS Indicator v1.0.3
 -- SmoothSpatula
 
-local dps_enabled = true
+mods.on_all_mods_loaded(function() for k, v in pairs(mods) do if type(v) == "table" and v.tomlfuncs then Toml = v end end 
+    params = {
+        dps_enabled = true
+    }
+    params = Toml.config_update(_ENV["!guid"], params) -- Load Save
+end)
 
 -- Parameters (in frames/ticks)
 
@@ -10,11 +15,11 @@ local tick_length = 5 --time between 2 damage updates
 local ratio = 60 / (nb_tp * tick_length)
 
 -- ========== ImGui ==========
-
 gui.add_to_menu_bar(function()
-    local new_value, clicked = ImGui.Checkbox("Show DPS", dps_enabled)
+    local new_value, clicked = ImGui.Checkbox("Show DPS", params['dps_enabled'])
     if clicked then
-        dps_enabled = new_value
+        params['dps_enabled'] = new_value
+        Toml.save_cfg(_ENV["!guid"], params)
     end
 end)
 
@@ -26,7 +31,7 @@ function get_value( t, key )
     end
     return nil
 end
-  
+
 function add_inst(tab, id, size)
     tab[id] = {}
     for i = 1, size do tab[id][i] = 0 end
@@ -41,19 +46,7 @@ local damage_tab = {}
 
 -- Adds damage together from last 5 ticks
 gm.post_script_hook(gm.constants.damager_calculate_damage, function(self, other, result, args)
-    if not dps_enabled then return end
-    -- Get the player ids on first damage dealt
-    -- (Tried to use run_create but player instances don't exist yet)
-    if not ingame then
-        damage_tab = {}
-        ingame = true
-        for i = 1, #gm.CInstance.instances_active do
-            local inst = gm.CInstance.instances_active[i]
-            if inst.object_index == gm.constants.oP then
-                add_inst(damage_tab, inst.id, nb_tp)
-            end
-        end  
-    end
+    if not params['dps_enabled'] then return end
     if args[6].type == 0 then return end --check if damage is done by an instance
     local actor = args[6].value
     local damage_actor = get_value(damage_tab, actor.id)
@@ -65,7 +58,7 @@ end)
 -- Cycle through the damage in a queue
 local tick_counter = 0
 gm.pre_script_hook(gm.constants.__input_system_tick, function(self, other, result, args)
-    if not dps_enabled then return end
+    if not params['dps_enabled'] then return end
     tick_counter = tick_counter + 1
     if tick_counter == tick_length then
         for id, damage_actor in pairs(damage_tab) do 
@@ -84,7 +77,7 @@ end)
 -- Hijack the Draw event
 gm.post_code_execute(function(self, other, code, result, flags)
     if code.name:match("oInit_Draw_7") then
-        if not ingame or not dps_enabled then return end
+        if not ingame or not params['dps_enabled'] then return end
         for i = 1, #gm.CInstance.instances_active do
             local inst = gm.CInstance.instances_active[i]
             if inst.object_index == gm.constants.oP then
@@ -94,6 +87,23 @@ gm.post_code_execute(function(self, other, code, result, flags)
                 gm.draw_text(inst.x, inst.y+25, "DPS : " .. math.floor(damage_to_display))
             end
         end
+    end
+end)
+
+
+-- Enable mod when you land
+gm.post_script_hook(gm.constants.actor_phy_on_landed, function(self, other, result, args)
+    if not params['dps_enabled'] then return end
+    -- Get the player ids on first damage dealt
+    if not ingame then
+        damage_tab = {}
+        ingame = true
+        for i = 1, #gm.CInstance.instances_active do
+            local inst = gm.CInstance.instances_active[i]
+            if inst.object_index == gm.constants.oP then
+                add_inst(damage_tab, inst.id, nb_tp)
+            end
+        end  
     end
 end)
 
