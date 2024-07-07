@@ -1,4 +1,4 @@
--- DPS Indicator v1.0.3
+-- DPS Indicator v1.0.4
 -- SmoothSpatula
 
 mods.on_all_mods_loaded(function() for k, v in pairs(mods) do if type(v) == "table" and v.tomlfuncs then Toml = v end end 
@@ -49,6 +49,8 @@ gm.post_script_hook(gm.constants.damager_calculate_damage, function(self, other,
     if not params['dps_enabled'] then return end
     if args[6].type == 0 then return end --check if damage is done by an instance
     local actor = args[6].value
+    if actor.master ~= nil then actor = actor.master end
+    if actor.parent ~= nil then actor = actor.parent end
     local damage_actor = get_value(damage_tab, actor.id)
     if damage_actor == nil then return end --check if instance is a player
     damage_actor[damage_index] = damage_actor[damage_index] + args[4].value
