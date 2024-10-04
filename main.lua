@@ -1,4 +1,4 @@
--- DPS Indicator v1.0.4
+-- DPS Indicator v1.0.5
 -- SmoothSpatula
 
 mods.on_all_mods_loaded(function() for k, v in pairs(mods) do if type(v) == "table" and v.tomlfuncs then Toml = v end end 
@@ -7,6 +7,7 @@ mods.on_all_mods_loaded(function() for k, v in pairs(mods) do if type(v) == "tab
     }
     params = Toml.config_update(_ENV["!guid"], params) -- Load Save
 end)
+mods.on_all_mods_loaded(function() for _, m in pairs(mods) do if type(m) == "table" and m.RoRR_Modding_Toolkit then for _, c in ipairs(m.Classes) do if m[c] then _G[c] = m[c] end end end end end)
 
 -- Parameters (in frames/ticks)
 
@@ -54,7 +55,6 @@ gm.post_script_hook(gm.constants.damager_calculate_damage, function(self, other,
     local damage_actor = get_value(damage_tab, actor.id)
     if damage_actor == nil then return end --check if instance is a player
     damage_actor[damage_index] = damage_actor[damage_index] + args[4].value
-    
 end)
 
 -- Cycle through the damage in a queue
@@ -76,9 +76,9 @@ gm.pre_script_hook(gm.constants.__input_system_tick, function(self, other, resul
     end
 end)
 
--- Hijack the Draw event
-gm.post_code_execute(function(self, other, code, result, flags)
-    if code.name:match("oInit_Draw_7") then
+-- Replaced for improved performance
+function __initialize()
+    Callback.add("postHUDDraw", "SmoothSpatula-DPSIndicator-Draw", function()
         if not ingame or not params['dps_enabled'] then return end
         for i = 1, #gm.CInstance.instances_active do
             local inst = gm.CInstance.instances_active[i]
@@ -89,15 +89,10 @@ gm.post_code_execute(function(self, other, code, result, flags)
                 gm.draw_text(inst.x, inst.y+25, "DPS : " .. math.floor(damage_to_display))
             end
         end
-    end
-end)
+    end)
 
-
--- Enable mod when you land
-gm.post_script_hook(gm.constants.actor_phy_on_landed, function(self, other, result, args)
-    if not params['dps_enabled'] then return end
-    -- Get the player ids on first damage dealt
-    if not ingame then
+    // Init on stage start
+    Callback.add("onStageStart", "SmoothSpatula-DPSIndicator-StageStart", function()
         damage_tab = {}
         ingame = true
         for i = 1, #gm.CInstance.instances_active do
@@ -105,11 +100,10 @@ gm.post_script_hook(gm.constants.actor_phy_on_landed, function(self, other, resu
             if inst.object_index == gm.constants.oP then
                 add_inst(damage_tab, inst.id, nb_tp)
             end
-        end  
-    end
-end)
-
--- Disable mod when run ends
-gm.pre_script_hook(gm.constants.run_destroy, function(self, other, result, args)
-    ingame = false
-end)
+        end 
+    end)
+    
+    Callback.add("onGameEnd", "SmoothSpatula-DPSIndicator-StageStart", function()
+        ingame = false
+    end)
+end
