@@ -1,4 +1,4 @@
--- DPS Indicator v1.0.5
+-- DPS Indicator v1.0.6
 -- SmoothSpatula
 
 mods.on_all_mods_loaded(function() for k, v in pairs(mods) do if type(v) == "table" and v.tomlfuncs then Toml = v end end 
@@ -91,7 +91,7 @@ function __initialize()
         end
     end)
 
-    // Init on stage start
+    -- Init on stage start
     Callback.add("onStageStart", "SmoothSpatula-DPSIndicator-StageStart", function()
         damage_tab = {}
         ingame = true
