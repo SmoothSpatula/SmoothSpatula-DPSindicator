@@ -1,4 +1,4 @@
--- DPS Indicator v1.0.6
+-- DPS Indicator v1.0.7
 -- SmoothSpatula
 
 mods.on_all_mods_loaded(function() for k, v in pairs(mods) do if type(v) == "table" and v.tomlfuncs then Toml = v end end 
@@ -7,7 +7,7 @@ mods.on_all_mods_loaded(function() for k, v in pairs(mods) do if type(v) == "tab
     }
     params = Toml.config_update(_ENV["!guid"], params) -- Load Save
 end)
-mods.on_all_mods_loaded(function() for _, m in pairs(mods) do if type(m) == "table" and m.RoRR_Modding_Toolkit then for _, c in ipairs(m.Classes) do if m[c] then _G[c] = m[c] end end end end end)
+mods["RoRRModdingToolkit-RoRR_Modding_Toolkit"].auto(true)
 
 -- Parameters (in frames/ticks)
 
@@ -77,7 +77,7 @@ gm.pre_script_hook(gm.constants.__input_system_tick, function(self, other, resul
 end)
 
 -- Replaced for improved performance
-function __initialize()
+function init()
     Callback.add("postHUDDraw", "SmoothSpatula-DPSIndicator-Draw", function()
         if not ingame or not params['dps_enabled'] then return end
         for i = 1, #gm.CInstance.instances_active do
@@ -107,3 +107,5 @@ function __initialize()
         ingame = false
     end)
 end
+
+Initialize(init)
