@@ -1,11 +1,11 @@
 {
 	"name": "DPSindicator",
-	"version_number": "1.0.6",
+	"version_number": "1.0.7",
 	"website_url": "https://github.com/SmoothSpatula/SmoothSpatula-DPSindicator",
 	"description": "Displays the current DPS for you and other players",
 	"dependencies": [
 		"ReturnOfModding-ReturnOfModding-1.0.32",
 		"SmoothSpatula-TomlHelper-1.0.1",
-		"RoRRModdingToolkit-RoRR_Modding_Toolkit-1.1.8"
+		"RoRRModdingToolkit-RoRR_Modding_Toolkit-1.2.0"
 	]
 }
